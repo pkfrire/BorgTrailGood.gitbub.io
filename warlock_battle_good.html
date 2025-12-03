@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borg's Trials - Good Version</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a0033;
+            color: #e0e0e0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #9d4edd;
+            text-align: center;
+            text-shadow: 0 0 10px #9d4edd;
+        }
+        
+        .game-container {
+            background: #2a1a4a;
+            border: 2px solid #9d4edd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .battle-area {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .entity {
+            background: #1a0033;
+            border: 2px solid #7b2cbf;
+            border-radius: 8px;
+            padding: 15px;
+            width: 45%;
+        }
+        
+        .entity h2 {
+            color: #c77dff;
+            margin-top: 0;
+        }
+        
+        .health-bar {
+            background: #3a2a5a;
+            border: 1px solid #7b2cbf;
+            height: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .health-fill {
+            background: #e0aaff;
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .stats {
+            color: #c77dff;
+            margin: 5px 0;
+        }
+        
+        .skills-area {
+            margin: 20px 0;
+        }
+        
+        .skill-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .skill-button {
+            background: #5a189a;
+            border: 2px solid #7b2cbf;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .skill-button:hover:not(:disabled) {
+            background: #7b2cbf;
+            border-color: #9d4edd;
+            transform: scale(1.05);
+        }
+        
+        .skill-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .skill-description {
+            font-size: 10px;
+            color: #c77dff;
+            margin-top: 5px;
+        }
+        
+        .battle-log {
+            background: #1a0033;
+            border: 2px solid #7b2cbf;
+            border-radius: 5px;
+            padding: 15px;
+            height: 150px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            color: #e0aaff;
+        }
+        
+        .log-damage {
+            color: #ff6b6b;
+        }
+        
+        .log-heal {
+            color: #51cf66;
+        }
+        
+        .game-over {
+            text-align: center;
+            font-size: 24px;
+            color: #9d4edd;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #9d4edd;
+        }
+        
+        .restart-button {
+            background: #5a189a;
+            border: 2px solid #7b2cbf;
+            color: #e0e0e0;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .restart-button:hover {
+            background: #7b2cbf;
+            border-color: #9d4edd;
+        }
+        
+        .skill-selection-screen {
+            background: #2a1a4a;
+            border: 2px solid #9d4edd;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .skill-selection-screen h2 {
+            color: #9d4edd;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .skill-selection-screen p {
+            text-align: center;
+            color: #c77dff;
+            margin-bottom: 20px;
+        }
+        
+        .available-skills {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .skill-select-item {
+            background: #1a0033;
+            border: 2px solid #5a189a;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .skill-select-item:hover {
+            border-color: #7b2cbf;
+            transform: scale(1.02);
+        }
+        
+        .skill-select-item.selected {
+            border-color: #9d4edd;
+            background: #3a2a5a;
+            box-shadow: 0 0 10px #9d4edd;
+        }
+        
+        .skill-select-item.passive {
+            border-color: #51cf66;
+        }
+        
+        .skill-select-item.passive.selected {
+            border-color: #51cf66;
+            box-shadow: 0 0 10px #51cf66;
+        }
+        
+        .skill-select-name {
+            color: #e0aaff;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .skill-select-desc {
+            color: #c77dff;
+            font-size: 12px;
+        }
+        
+        .skill-select-stats {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        
+        .slots-remaining {
+            text-align: center;
+            color: #9d4edd;
+            font-size: 18px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .start-battle-button {
+            background: #5a189a;
+            border: 2px solid #7b2cbf;
+            color: #e0e0e0;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            display: block;
+            margin: 20px auto;
+            transition: all 0.2s;
+        }
+        
+        .start-battle-button:hover:not(:disabled) {
+            background: #7b2cbf;
+            border-color: #9d4edd;
+            transform: scale(1.05);
+        }
+        
+        .start-battle-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .post-battle-screen {
+            background: #2a1a4a;
+            border: 2px solid #9d4edd;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .post-battle-screen h2 {
+            color: #9d4edd;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .post-battle-screen p {
+            color: #c77dff;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .choice-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .choice-button {
+            background: #5a189a;
+            border: 2px solid #7b2cbf;
+            color: #e0e0e0;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            transition: all 0.2s;
+            min-width: 200px;
+        }
+        
+        .choice-button:hover {
+            background: #7b2cbf;
+            border-color: #9d4edd;
+            transform: scale(1.05);
+        }
+        
+        .choice-button.sacrifice {
+            background: #8b0000;
+            border-color: #a52a2a;
+        }
+        
+        .choice-button.sacrifice:hover {
+            background: #a52a2a;
+            border-color: #dc143c;
+        }
+        
+        .end-day-button {
+            background: #3a2a5a;
+            border: 2px solid #7b2cbf;
+            color: #e0e0e0;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin-top: 30px;
+            min-width: 200px;
+        }
+        
+        .end-day-button:hover {
+            background: #5a189a;
+            border-color: #9d4edd;
+        }
+    </style>
+</head>
+<body>
+    <h1>BORG'S TRIALS</h1>
+    
+    <!-- Skill Selection Screen -->
+    <div class="skill-selection-screen" id="skillSelectionScreen">
+        <h2>Prepare Your Grimoire</h2>
+        <p>A creatin is now coming to stop you from summoning of the GREAT BORG. He has given you power to smite those in your way. Select wisely - your eldritch power is great, but your available pages are limited.</p>
+        
+        <div class="slots-remaining" id="slotsRemaining">Slots Remaining: 8/8</div>
+        
+        <div class="available-skills" id="availableSkills">
+            <!-- Skills will be populated here -->
+        </div>
+        
+        <button class="start-battle-button" id="startBattleButton" disabled>BEGIN BATTLE</button>
+    </div>
+    
+    <div class="game-container hidden" id="gameContainer">
+        <p style="text-align: center; color: #c77dff;">
+            An invader approaches your tower! Defend yourself with your eldritch powers!
+        </p>
+        
+        <div class="battle-area">
+            <div class="entity">
+                <h2>Warlock</h2>
+                <div class="stats">HP: <span id="playerHP">100</span> / <span id="playerMaxHP">100</span></div>
+                <div class="health-bar">
+                    <div class="health-fill" id="playerHealthBar" style="width: 100%"></div>
+                </div>
+                <div class="stats">ATK: <span id="playerAtk">5</span></div>
+            </div>
+            
+            <div class="entity">
+                <h2>Invader</h2>
+                <div class="stats">HP: <span id="enemyHP">100</span> / <span id="enemyMaxHP">100</span></div>
+                <div class="health-bar">
+                    <div class="health-fill" id="enemyHealthBar" style="width: 100%"></div>
+                </div>
+                <div class="stats">ATK: <span id="enemyAtk">3</span></div>
+            </div>
+        </div>
+        
+        <div class="skills-area">
+            <h3 style="color: #9d4edd;">Your Skills (Choose wisely!)</h3>
+            <div class="skill-slots" id="skillSlots">
+                <!-- Skills will be added here -->
+            </div>
+        </div>
+        
+        <div class="battle-log" id="battleLog">
+            <div class="log-entry">Battle begins!</div>
+        </div>
+        
+        <div id="gameOverMessage"></div>
+    </div>
+    
+    <!-- Post-Battle Screen -->
+    <div class="post-battle-screen hidden" id="postBattleScreen">
+        <h2>What is the fate of the fallen?</h2>
+        <p>The invader has been defeated. The GREAT BORG awaits your decision.</p>
+        
+        <div class="choice-buttons">
+            <button class="choice-button sacrifice" id="sacrificeButton">SACRIFICE TO BORG</button>
+            <button class="choice-button" id="banishButton">BANISH TO THE LAND OF ETERNAL TORMENT</button>
+        </div>
+        
+        <button class="end-day-button" id="endDayButton">END DAY</button>
+    </div>
+
+    <script>
+        // ============================================================================
+        // GOOD VERSION - DATA-DRIVEN DESIGN
+        // All configuration is separated from logic
+        // ============================================================================
+        
+        // GOOD: All skills defined as data, not hardcoded in logic
+        const SKILL_DATABASE = [
+            // Attack Skills
+            { id: 1, name: "Shadow Blade", damage: 8, type: "attack", description: "Solidified darkness strikes" },
+            { id: 2, name: "Spectral Chains", damage: 6, type: "attack", description: "Ghostly chains that crush" },
+            { id: 3, name: "Void Tendril Strike", damage: 7, type: "attack", description: "Lash from the void" },
+            { id: 4, name: "Bone Shatter", damage: 9, type: "attack", description: "Crush with eldritch force" },
+            { id: 5, name: "Abyssal Claw", damage: 10, type: "attack", description: "Rake with otherworldly claws" },
+            { id: 6, name: "Eldritch Blast", damage: 7, type: "attack", description: "Pure arcane energy bolt" },
+            { id: 7, name: "Mind Spike", damage: 6, type: "attack", description: "Pierce enemy consciousness" },
+            { id: 8, name: "Curse of Agony", damage: 8, type: "attack", description: "Inflict supernatural pain" },
+            { id: 9, name: "Soul Burn", damage: 9, type: "attack", description: "Sear the very essence" },
+            { id: 10, name: "Cosmic Ray", damage: 10, type: "attack", description: "Channel stellar destruction" },
+            // Defensive Skill
+            { id: 11, name: "Eldritch Ward", type: "defense", damageReduction: 0.5, description: "Reduce damage by 50%" },
+            // Passive Skills
+            { id: 12, name: "HP +10", type: "passive", statBonus: { hp: 10 }, description: "Increase max health" },
+            { id: 13, name: "HP +5", type: "passive", statBonus: { hp: 5 }, description: "Increase max health" },
+            { id: 14, name: "HP +3", type: "passive", statBonus: { hp: 3 }, description: "Increase max health" },
+            { id: 15, name: "ATK +5", type: "passive", statBonus: { atk: 5 }, description: "Increase attack power" },
+            { id: 16, name: "ATK +3", type: "passive", statBonus: { atk: 3 }, description: "Increase attack power" },
+            { id: 17, name: "ATK +2", type: "passive", statBonus: { atk: 2 }, description: "Increase attack power" }
+        ];
+        
+        // GOOD: Game configuration separated from code
+        const GAME_CONFIG = {
+            maxSkillSlots: 8,
+            player: {
+                name: "Warlock",
+                baseStats: { hp: 100, atk: 5 }
+            },
+            enemy: {
+                name: "Invader",
+                baseStats: { hp: 100, atk: 3 },
+                defenseThreshold: 0.5, // Use defense at 50% HP
+                defenseDuration: 3,
+                baseAttackDamage: 5
+            }
+        };
+        
+        // ============================================================================
+        // ENTITY CLASS - REUSABLE FOR BOTH PLAYER AND ENEMY
+        // GOOD: No code duplication! One class handles both entities
+        // ============================================================================
+        
+        class Entity {
+            constructor(name, baseStats) {
+                this.name = name;
+                this.baseStats = { ...baseStats };
+                this.currentHP = baseStats.hp;
+                this.maxHP = baseStats.hp;
+                this.atk = baseStats.atk;
+                this.defenseActive = false;
+                this.defenseTurnsRemaining = 0;
+                this.defenseReduction = 0;
+            }
+            
+            // GOOD: Generic method that works for any stat modification
+            applyStatBonus(statBonus) {
+                if (statBonus.hp) {
+                    this.maxHP += statBonus.hp;
+                    this.currentHP += statBonus.hp;
+                }
+                if (statBonus.atk) {
+                    this.atk += statBonus.atk;
+                }
+            }
+            
+            // GOOD: Flexible targeting - can target any entity
+            takeDamage(damage) {
+                // Apply defense if active
+                let finalDamage = damage;
+                if (this.defenseActive && this.defenseTurnsRemaining > 0) {
+                    finalDamage = Math.floor(damage * (1 - this.defenseReduction));
+                    return { damage: finalDamage, reducedByDefense: true };
+                }
+                return { damage: finalDamage, reducedByDefense: false };
+            }
+            
+            // GOOD: Reusable defense activation
+            activateDefense(reduction, duration) {
+                this.defenseActive = true;
+                this.defenseReduction = reduction;
+                this.defenseTurnsRemaining = duration;
+            }
+            
+            // GOOD: Countdown defense duration
+            updateDefense() {
+                if (this.defenseActive && this.defenseTurnsRemaining > 0) {
+                    this.defenseTurnsRemaining--;
+                    if (this.defenseTurnsRemaining === 0) {
+                        this.defenseActive = false;
+                        this.defenseReduction = 0;
+                        return true; // Defense expired
+                    }
+                }
+                return false;
+            }
+            
+            isAlive() {
+                return this.currentHP > 0;
+            }
+        }
+        
+        // ============================================================================
+        // GAME STATE
+        // ============================================================================
+        
+        let player = null;
+        let enemy = null;
+        let selectedSkills = [];
+        let gameOver = false;
+        let playerTurn = true;
+        let enemyUsedDefense = false;
+        
+        // ============================================================================
+        // SKILL SELECTION PHASE
+        // ============================================================================
+        
+        function initSkillSelection() {
+            const container = document.getElementById('availableSkills');
+            container.innerHTML = '';
+            
+            SKILL_DATABASE.forEach((skill) => {
+                const skillDiv = document.createElement('div');
+                skillDiv.className = 'skill-select-item' + (skill.type === 'passive' ? ' passive' : '');
+                skillDiv.id = `select-skill-${skill.id}`;
+                
+                let statsText = getSkillStatsText(skill);
+                
+                skillDiv.innerHTML = `
+                    <div class="skill-select-name">${skill.name}</div>
+                    <div class="skill-select-desc">${skill.description}</div>
+                    <div class="skill-select-stats">${statsText}</div>
+                `;
+                
+                skillDiv.onclick = () => toggleSkillSelection(skill.id);
+                container.appendChild(skillDiv);
+            });
+            
+            updateSlotsDisplay();
+        }
+        
+        // GOOD: Reusable function to get skill description
+        function getSkillStatsText(skill) {
+            if (skill.type === 'attack') {
+                return `Damage: ${skill.damage}`;
+            } else if (skill.type === 'passive' && skill.statBonus) {
+                if (skill.statBonus.hp) return `+${skill.statBonus.hp} HP`;
+                if (skill.statBonus.atk) return `+${skill.statBonus.atk} ATK`;
+            } else if (skill.type === 'defense') {
+                return `Defense Skill`;
+            }
+            return '';
+        }
+        
+        function toggleSkillSelection(skillId) {
+            const skill = SKILL_DATABASE.find(s => s.id === skillId);
+            const skillDiv = document.getElementById(`select-skill-${skillId}`);
+            
+            const selectedIndex = selectedSkills.findIndex(s => s.id === skillId);
+            
+            if (selectedIndex !== -1) {
+                selectedSkills.splice(selectedIndex, 1);
+                skillDiv.classList.remove('selected');
+            } else {
+                if (selectedSkills.length < GAME_CONFIG.maxSkillSlots) {
+                    selectedSkills.push(skill);
+                    skillDiv.classList.add('selected');
+                }
+            }
+            
+            updateSlotsDisplay();
+        }
+        
+        function updateSlotsDisplay() {
+            const remaining = GAME_CONFIG.maxSkillSlots - selectedSkills.length;
+            document.getElementById('slotsRemaining').textContent = 
+                `Slots Remaining: ${remaining}/${GAME_CONFIG.maxSkillSlots}`;
+            
+            const startButton = document.getElementById('startBattleButton');
+            startButton.disabled = selectedSkills.length !== GAME_CONFIG.maxSkillSlots;
+        }
+        
+        function startBattle() {
+            document.getElementById('skillSelectionScreen').classList.add('hidden');
+            document.getElementById('gameContainer').classList.remove('hidden');
+            initGame();
+        }
+        
+        // ============================================================================
+        // BATTLE PHASE
+        // ============================================================================
+        
+        function initGame() {
+            // GOOD: Initialize entities using the class
+            player = new Entity(GAME_CONFIG.player.name, GAME_CONFIG.player.baseStats);
+            enemy = new Entity(GAME_CONFIG.enemy.name, GAME_CONFIG.enemy.baseStats);
+            
+            // Apply passive bonuses
+            selectedSkills.forEach(skill => {
+                if (skill.type === 'passive') {
+                    player.applyStatBonus(skill.statBonus);
+                }
+            });
+            
+            updateDisplay();
+            renderSkills();
+        }
+        
+        function renderSkills() {
+            const skillSlots = document.getElementById('skillSlots');
+            skillSlots.innerHTML = '';
+            
+            selectedSkills.forEach((skill, index) => {
+                if (skill.type !== 'passive') {
+                    const button = document.createElement('button');
+                    button.className = 'skill-button';
+                    button.innerHTML = `<strong>${skill.name}</strong><div class="skill-description">${skill.description}</div>`;
+                    button.onclick = () => useSkill(skill);
+                    button.id = `skill${index}`;
+                    skillSlots.appendChild(button);
+                }
+            });
+        }
+        
+        // GOOD: Generic attack function that works for any attacker/target
+        function performAttack(attacker, target, skill) {
+            let totalDamage = 0;
+            
+            if (skill.type === 'attack') {
+                totalDamage = skill.damage + attacker.atk;
+            } else if (skill.type === 'defense') {
+                // Activate defense on the attacker
+                attacker.activateDefense(skill.damageReduction, 1); // Player defense is 1 turn
+                addLog(`${attacker.name} activates ${skill.name}!`);
+                return null;
+            }
+            
+            // Apply damage to target
+            const damageResult = target.takeDamage(totalDamage);
+            target.currentHP = Math.max(0, target.currentHP - damageResult.damage);
+            
+            return {
+                damage: damageResult.damage,
+                reducedByDefense: damageResult.reducedByDefense
+            };
+        }
+        
+        function useSkill(skill) {
+            if (gameOver || !playerTurn) return;
+            
+            // GOOD: Flexible function handles both attacks and defense
+            const result = performAttack(player, enemy, skill);
+            
+            if (result) {
+                addLog(`${player.name} uses ${skill.name}!`, 'damage');
+                if (result.reducedByDefense) {
+                    addLog(`Void Shield absorbs some damage!`);
+                }
+                addLog(`${enemy.name} takes ${result.damage} damage!`, 'damage');
+            }
+            
+            updateDisplay();
+            
+            if (!enemy.isAlive()) {
+                enemy.currentHP = 0;
+                endGame(true);
+                return;
+            }
+            
+            playerTurn = false;
+            disableSkills();
+            setTimeout(enemyTurn, 1000);
+        }
+        
+        // GOOD: Enemy AI using the same attack system
+        function enemyTurn() {
+            if (gameOver) return;
+            
+            // Update enemy defense countdown
+            const defenseExpired = enemy.updateDefense();
+            if (defenseExpired) {
+                addLog(`${enemy.name}'s Void Shield fades...`);
+            }
+            
+            // Check if enemy should use defense
+            const hpPercentage = enemy.currentHP / enemy.maxHP;
+            if (hpPercentage <= GAME_CONFIG.enemy.defenseThreshold && !enemyUsedDefense) {
+                enemy.activateDefense(0.5, GAME_CONFIG.enemy.defenseDuration);
+                enemyUsedDefense = true;
+                addLog(`${enemy.name} activates Void Shield! (${GAME_CONFIG.enemy.defenseDuration} turns)`);
+            } else {
+                // Perform attack
+                const attackDamage = GAME_CONFIG.enemy.baseAttackDamage + enemy.atk;
+                const damageResult = player.takeDamage(attackDamage);
+                player.currentHP = Math.max(0, player.currentHP - damageResult.damage);
+                
+                addLog(`${enemy.name} attacks!`);
+                if (damageResult.reducedByDefense) {
+                    addLog(`Eldritch Ward absorbs some damage!`);
+                    player.defenseActive = false; // Player defense is 1-turn
+                }
+                addLog(`${player.name} takes ${damageResult.damage} damage!`, 'damage');
+            }
+            
+            updateDisplay();
+            
+            if (!player.isAlive()) {
+                player.currentHP = 0;
+                endGame(false);
+                return;
+            }
+            
+            playerTurn = true;
+            enableSkills();
+        }
+        
+        // ============================================================================
+        // UI UPDATES
+        // ============================================================================
+        
+        // GOOD: Generic display update that works for any entities
+        function updateDisplay() {
+            document.getElementById('playerHP').textContent = Math.floor(player.currentHP);
+            document.getElementById('playerMaxHP').textContent = player.maxHP;
+            document.getElementById('playerAtk').textContent = player.atk;
+            
+            document.getElementById('enemyHP').textContent = Math.floor(enemy.currentHP);
+            document.getElementById('enemyMaxHP').textContent = enemy.maxHP;
+            document.getElementById('enemyAtk').textContent = enemy.atk;
+            
+            const playerHealthPercent = (player.currentHP / player.maxHP) * 100;
+            const enemyHealthPercent = (enemy.currentHP / enemy.maxHP) * 100;
+            
+            document.getElementById('playerHealthBar').style.width = playerHealthPercent + '%';
+            document.getElementById('enemyHealthBar').style.width = enemyHealthPercent + '%';
+        }
+        
+        function addLog(message, type = '') {
+            const log = document.getElementById('battleLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            if (type === 'damage') entry.className += ' log-damage';
+            if (type === 'heal') entry.className += ' log-heal';
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function disableSkills() {
+            selectedSkills.forEach((skill, index) => {
+                if (skill.type !== 'passive') {
+                    const button = document.getElementById(`skill${index}`);
+                    if (button) button.disabled = true;
+                }
+            });
+        }
+        
+        function enableSkills() {
+            selectedSkills.forEach((skill, index) => {
+                if (skill.type !== 'passive') {
+                    const button = document.getElementById(`skill${index}`);
+                    if (button) button.disabled = false;
+                }
+            });
+        }
+        
+        function endGame(playerWon) {
+            gameOver = true;
+            disableSkills();
+            
+            const message = document.getElementById('gameOverMessage');
+            if (playerWon) {
+                message.innerHTML = '<div class="game-over">VICTORY!<br>The invader has been defeated!</div>';
+                setTimeout(() => {
+                    document.getElementById('gameContainer').classList.add('hidden');
+                    document.getElementById('postBattleScreen').classList.remove('hidden');
+                }, 2000);
+            } else {
+                message.innerHTML = '<div class="game-over">DEFEAT<br>Your tower has fallen...</div>';
+                const restartButton = document.createElement('button');
+                restartButton.className = 'restart-button';
+                restartButton.textContent = 'END DAY';
+                restartButton.onclick = () => location.reload();
+                message.appendChild(restartButton);
+            }
+        }
+        
+        // ============================================================================
+        // POST-BATTLE PHASE
+        // ============================================================================
+        
+        document.getElementById('sacrificeButton').onclick = () => {
+            alert('You have sacrificed the invader to the GREAT BORG. (Feature not implemented in demo)');
+        };
+        
+        document.getElementById('banishButton').onclick = () => {
+            alert('You have banished the invader to the LAND OF ETERNAL TORMENT. (Feature not implemented in demo)');
+        };
+        
+        document.getElementById('endDayButton').onclick = () => {
+            location.reload();
+        };
+        
+        document.getElementById('startBattleButton').onclick = startBattle;
+        
+        // ============================================================================
+        // INITIALIZE
+        // ============================================================================
+        
+        initSkillSelection();
+    </script>
+</body>
+</html>
